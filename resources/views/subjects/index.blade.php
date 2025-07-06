@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Data Mata Pelajaran')
+@section('title')
+    Manajemen Data Mata Pelajaran
+@endsection
+
+@push('css')
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+@endpush
 
 @section('content')
     <div class="content-header">
@@ -11,149 +20,105 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
+                        {{-- Tambahkan breadcrumb jika diperlukan --}}
                     </ol>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="content">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
-                    <div class="card">
+                <div class="col-md-12">
+                    <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h3 class="card-title">Kelola Data Mata Pelajaran</h3>
                             <div class="card-tools">
-                                <a href="{{ route('manage-subjects.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah Data
+                                <a href="{{ route('manage-subject.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle"></i> Tambah Data
                                 </a>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="subjectsTable" class="table table-bordered table-striped"
-                                    style="border-radius: 10px; overflow: hidden;">
-                                    <thead style="background-color: #009cf3; color: white;">
+                                <table id="datatable-main" class="table table-bordered table-striped">
+                                    <thead class="bg-tertiary text-white">
                                         <tr>
                                             <th>No</th>
                                             <th>Kode Mata Pelajaran</th>
                                             <th>Nama Mata Pelajaran</th>
+                                            <th>Nama Kurikulum</th>
+                                            {{-- <th>Status</th> --}}
                                             <th>Deskripsi</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
+                                    <tbody>
+                                        @foreach ($subjects as $subject)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $subject->subject_code }}</td>
+                                                <td>{{ $subject->subject_name }}</td>
+                                                <td>{{ $subject->curriculum_name }}</td>
+                                                <td>{{ $subject->description }}</td>
+                                                {{-- <td>{{ $curriculum->is_active ? 'Aktif' : 'Tidak Aktif' }}</td> --}}
+                                                <td>
+                                                    <a href="{{ route('manage-subject.edit', $subject->id) }}" 
+                                                        class="btn btn-sm" 
+                                                        style="background-color: #FFC107; color: black; margin-right: 5px;">
+                                                            <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    <form id="delete-form-{{ $subject->id }}"
+                                                        action="{{ route('manage-subject.destroy', $subject->id) }}"
+                                                        method="POST" style="display: inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button" class="btn btn-sm"
+                                                            style="background-color: #DC3545; color: white;"
+                                                            onclick="confirmDelete({{ $subject->id }})">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
+                            </div> {{-- table-responsive --}}
+                        </div> {{-- card-body --}}
+                    </div> {{-- card --}}
                 </div>
             </div>
         </div>
     </div>
-
 @endsection
 
-@push('css')
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
-    <!-- Toastr -->
-    <link rel="stylesheet" href="{{ asset('plugins/toastr/toastr.min.css') }}">
-@endpush
-
 @push('js')
-    <!-- DataTables  & Plugins -->
+    <!-- DataTables Scripts -->
     <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
-    <!-- Toastr -->
-    <script src="{{ asset('plugins/toastr/toastr.min.js') }}"></script>
-    <!-- SweetAlert -->
+    <script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        $(function() {
-            $('#subjectsTable').DataTable({
-                processing: true,
-                serverSide: true,
-                responsive: true,
-                ajax: '{{ route('subjects.index') }}',
-                columns: [
-                    {
-                        data: 'DT_RowIndex',
-                        name: 'DT_RowIndex',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'kode',
-                        name: 'kode'
-                    },
-                    {
-                        data: 'nama',
-                        name: 'nama'
-                    },
-                    {
-                        data: 'deskripsi',
-                        name: 'deskripsi'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    },
-                ]
-            });
-
-            @if (session('success'))
-                toastr.success('{{ session('success') }}');
-            @endif
-
-            @if ($errors->any())
-                @foreach ($errors->all() as $error)
-                    toastr.error('{{ $error }}');
-                @endforeach
-            @endif
-        });
-
-        function deleteSubject(id) {
+        function confirmDelete(id) {
             Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: "Data mata pelajaran akan dihapus secara permanen!",
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak bisa dikembalikan!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/manage-subjects/${id}`,
-                        type: 'DELETE',
-                        data: {
-                            "_token": "{{ csrf_token() }}"
-                        },
-                        success: function(response) {
-                            Swal.fire(
-                                'Terhapus!',
-                                response.message,
-                                'success'
-                            );
-                            $('#subjectsTable').DataTable().ajax.reload();
-                        },
-                        error: function(xhr) {
-                            console.log(xhr.responseText);
-                            Swal.fire(
-                                'Error!',
-                                'Gagal menghapus data mata pelajaran.',
-                                'error'
-                            );
-                        }
-                    });
+                    document.getElementById('delete-form-' + id).submit();
                 }
             });
         }

@@ -1,0 +1,58 @@
+# Node.js dependencies
+node_modules/
+
+# Composer dependencies
+vendor/
+
+# Git repository files
+.git/
+.gitignore
+
+# Laravel storage (kecuali folder yang diperlukan)
+storage/*
+!storage/app/public
+!storage/framework
+!storage/logs
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
+# Docker-related files
+.dockerignore
+docker-compose.yml
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Build artifacts
+/public/hot
+/public/storage
+/public/mix-manifest.json
+/public/js/*.map
+/public/css/*.map
+
+# Cache files
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Python dependencies (untuk image-classifier)
+image-classifier/__pycache__/
+image-classifier/*.pyc
+image-classifier/*.pyo
+image-classifier/env/
+image-classifier/.env
+
+# Miscellaneous
+Thumbs.db
+.DS_Store

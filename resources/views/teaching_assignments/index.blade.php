@@ -79,14 +79,14 @@
                                             @if($assignment->academicYear)
                                                 {{ $assignment->academicYear->start_year }}/{{ $assignment->academicYear->end_year }}
                                                 {{ isset($assignment->academicYear->semester)
-                                                    ? ($assignment->academicYear->semester == 1 ? 'Ganjil' : 'Genap')
+                                                    ? ($assignment->academicYear->semester == 0 ? 'Genap' : 'Ganjil')
                                                     : '' }}
                                             @else
                                                 <span class="text-danger">Belum diatur</span>
                                             @endif
                                         </td>
-                                        <td>{{ optional($assignment->class)->name }} - {{ optional($assignment->class)->parallel_name }}</td>
-                                        <td>{{ $assignment->subject->name ?? '-' }}</td>
+                                        <td>{{ optional($assignment->schoolClass)->name }} - {{ optional($assignment->schoolClass)->parallel_name }}</td>
+                                        <td>{{ $assignment->subject->subject_name ?? '-' }}</td>
                                         <td>{{ $assignment->teacher->name ?? '-' }}</td>
                                         <td>
                                             <div class="btn-group">

@@ -44,4 +44,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relasi ke Teacher (jika user adalah guru)
+     */
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class, 'user_id', 'id');
+    }
 }

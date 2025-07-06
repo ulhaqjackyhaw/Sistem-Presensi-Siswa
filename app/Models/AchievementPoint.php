@@ -22,8 +22,8 @@ class AchievementPoint extends Model
      * @var array
      */
     protected $fillable = [
-        'jenis_prestasi',
-        'kategori_prestasi',
-        'poin',
+        'achievement_type',
+        'achievement_category',
+        'points',
     ];
 }

@@ -36,6 +36,48 @@ class Student extends Model
     }
 
     /**
+     * Semua assignment (history) siswa ini
+     */
+    public function classAssignments()
+    {
+        return $this->hasMany(StudentClassAssignment::class, 'student_id');
+    }
+
+    /**
+     * Assignment terbaru (latest) per siswa, plus eager schoolClass
+     */
+    public function currentAssignment()
+    {
+         return $this->hasOne(StudentClassAssignment::class, 'student_id', 'nisn') // Ganti 'nisn' dengan primary key siswa jika berbeda
+                    ->latestOfMany('updated_at');
+    }
+
+    /**
+     * Relasi langsung ke kelas aktif siswa (SchoolClass)
+     */
+    public function schoolClass()
+    {
+        // Ambil dari currentAssignment jika ada, relasi ke SchoolClass
+        return $this->currentAssignment ? $this->currentAssignment->schoolClass() : null;
+    }
+
+    /**
+     * Relasi ke prestasi siswa
+     */
+    public function achievements()
+    {
+        return $this->hasMany(Achievement::class, 'student_id', 'nisn');
+    }
+
+    /**
+     * Relasi ke pelanggaran siswa
+     */
+    public function violations()
+    {
+        return $this->hasMany(Violation::class, 'student_id', 'nisn');
+    }
+
+    /**
      * Override agar route model binding pakai 'nisn' sebagai key.
      */
     public function getRouteKeyName()

@@ -37,8 +37,8 @@
                             @method('PUT')
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label>Tahun Mulai</label>
-                                    <input type="number" name="start_year"
+                                    <label for="edit_start_year_input">Tahun Mulai</label>
+                                    <input type="number" name="start_year" id="edit_start_year_input"
                                         class="form-control @error('start_year') is-invalid @enderror"
                                         placeholder="Contoh: 2025"
                                         value="{{ old('start_year', $academicYear->start_year) }}">
@@ -49,25 +49,19 @@
                                     @enderror
                                 </div>
 
-                                <div class="form-group">
-                                    <label>Tahun Selesai</label>
-                                    <input type="number" name="end_year"
-                                        class="form-control @error('end_year') is-invalid @enderror"
-                                        placeholder="Contoh: 2026"
-                                        value="{{ old('end_year', $academicYear->end_year) }}">
-                                    @error('end_year')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
+                                {{-- Input Tahun Selesai (end_year) dijadikan tersembunyi --}}
+                                <input type="hidden" name="end_year" id="edit_end_year_input" value="{{ old('end_year', $academicYear->end_year) }}">
+                                {{--
+                                    Label dan @error untuk end_year tidak lagi ditampilkan karena inputnya hidden.
+                                    Validasi di backend untuk end_year (seperti gt:start_year) tetap akan berjalan.
+                                --}}
 
                                 <div class="form-group">
                                     <label>Semester</label>
                                     <select name="semester" class="form-control @error('semester') is-invalid @enderror">
                                         <option value="">-- Pilih Semester --</option>
-                                        <option value="0" {{ old('semester', $academicYear->semester) == 0 ? 'selected' : '' }}>Ganjil</option>
-                                        <option value="1" {{ old('semester', $academicYear->semester) == 1 ? 'selected' : '' }}>Genap</option>
+                                        <option value="0" {{ old('semester', $academicYear->semester) == '0' ? 'selected' : '' }}>Genap</option>
+                                        <option value="1" {{ old('semester', $academicYear->semester) == '1' ? 'selected' : '' }}>Ganjil</option>
                                     </select>
                                     @error('semester')
                                         <div class="invalid-feedback">
@@ -78,15 +72,16 @@
 
                                 <div class="form-group">
                                     <label>Aktifkan Tahun Akademik Ini?</label><br>
+                                    <input type="hidden" name="is_active" value="0">
                                     <input type="checkbox" name="is_active" value="1"
-                                        {{ old('is_active', $academicYear->is_active) ? 'checked' : '' }}> Ya
+                                        {{ old('is_active', $academicYear->is_active) == 1 ? 'checked' : '' }}> Ya
                                 </div>
                             </div>
 
                             <div class="card-footer">
                                 <button type="submit" class="btn btn-block btn-flat text-white" style="background-color: #1777E5">
                                     <i class="fa fa-save"></i> Update
-                                </button>       
+                                </button>
                             </div>
                         </form>
 
@@ -98,4 +93,30 @@
 @endsection
 
 @push('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startYearInput = document.getElementById('edit_start_year_input');
+        const endYearInput = document.getElementById('edit_end_year_input'); // Tetap mengambil elemen berdasarkan ID
+
+        function updateEndYear() {
+            const startYearValue = parseInt(startYearInput.value);
+            if (!isNaN(startYearValue) && startYearInput.value.length === 4) {
+                endYearInput.value = startYearValue + 1; // Mengisi value input hidden
+            } else {
+                // Jika start_year dikosongkan, end_year juga dikosongkan
+                // Jika tidak, biarkan value lama (dari old() atau database) jika start_year tidak valid tapi tidak kosong
+                if (startYearInput.value === '') {
+                    endYearInput.value = '';
+                }
+            }
+        }
+
+        // Panggil saat nilai start_year berubah
+        startYearInput.addEventListener('input', updateEndYear);
+
+        // Panggil saat halaman dimuat untuk menginisialisasi end_year
+        // berdasarkan nilai start_year yang ada (dari $academicYear atau old('start_year'))
+        updateEndYear();
+    });
+</script>
 @endpush

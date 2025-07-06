@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\SchoolClass;
+use App\Models\Achievement;
+use App\Models\Violation;
 use App\Imports\StudentsImport;
 use App\Exports\StudentTemplateExport;
 use Illuminate\Http\Request;
@@ -12,8 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class StudentController extends Controller
 {
@@ -23,6 +27,14 @@ class StudentController extends Controller
         $this->middleware('permission:create_student')->only('create', 'store', 'import');
         $this->middleware('permission:update_student')->only('edit', 'update');
         $this->middleware('permission:delete_student')->only('destroy');
+
+        // Allow both GuruBK role and users with permission:read_student to access showDetail
+        $this->middleware(function ($request, $next) {
+            if (Auth::user()->hasRole('Guru BK') || Auth::user()->can('read_student')) {
+                return $next($request);
+            }
+            return abort(403, 'Akses ditolak. Anda bukan wali kelas.');
+        })->only('showDetail');
     }
 
     public function index()
@@ -56,7 +68,7 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nis' => 'required|string|max:20',
+            'nis' => 'required|string|max:20|unique:students,nis',
             'nisn' => 'required|string|size:10|unique:students,nisn',
             'name' => 'required|string|max:255',
             'address' => 'required|string',
@@ -74,16 +86,19 @@ class StudentController extends Controller
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['parent_email'],
-                'password' => Hash::make($validated['nisn'] . date('dmY', strtotime($validated['birth_date']))),
+                'password' => Hash::make("siswa123"), // Default password, $validated['nisn'] . date('dmY', strtotime($validated['birth_date']))
             ]);
 
             if (method_exists($user, 'assignRole')) {
                 $user->assignRole('Siswa');
             }
 
-            $photoPath = $request->hasFile('photo')
-                ? $request->file('photo')->store('student-photos', 'public')
-                : null;
+            $photoPath = null;
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $fileName = $validated['nisn'] . '_' . preg_replace('/\s+/', '', $validated['name']) . '.' . $file->getClientOriginalExtension();
+                $photoPath = $file->storeAs('student-photos', $fileName, 'public');
+            }
 
             Student::create([
                 'nis' => $validated['nis'],
@@ -120,7 +135,7 @@ class StudentController extends Controller
         $student = Student::where('nisn', $nisn)->firstOrFail();
 
         $validated = $request->validate([
-            'nis' => 'required|string|max:20',
+            'nis' => 'required|string|max:20|unique:students,nis,' . $student->nis . ',nis',
             'nisn' => 'required|string|size:10|unique:students,nisn,' . $student->nisn . ',nisn',
             'name' => 'required|string|max:255',
             'address' => 'required|string',
@@ -197,7 +212,7 @@ class StudentController extends Controller
         try {
             Excel::import(new StudentsImport, $request->file('file'));
             return redirect()->route('manage-students.index')->with('success', 'Data siswa berhasil diimport.');
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        } catch (ValidationException $e) {
             $errors = collect($e->failures())->map(fn($failure) => "Baris {$failure->row()}: {$failure->errors()[0]}")->implode('<br>');
             return redirect()->back()->with('error', $errors);
         } catch (\Exception $e) {
@@ -228,5 +243,39 @@ class StudentController extends Controller
             'birth_date' => $student->birth_date,
             'photo_url' => $student->photo ? asset('storage/' . $student->photo) : null,
         ]);
+    }
+
+    /**
+     * Menampilkan detail siswa termasuk prestasi dan pelanggaran
+     */
+    public function showDetail(Student $student)
+    {
+        // Ambil data prestasi siswa
+        $achievements = Achievement::where('student_id', $student->nisn)
+            ->where('validation_status', 'approved')
+            ->with(['achievementPoint', 'teacher', 'validator'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'ach_page');
+
+        // Hitung total poin prestasi
+        $totalAchievementPoints = Achievement::where('student_id', $student->nisn)
+            ->where('validation_status', 'approved')
+            ->join('achievement_points', 'achievements.achievement_points_id', '=', 'achievement_points.id')
+            ->sum('achievement_points.points');
+
+        // Ambil data pelanggaran siswa
+        $violations = Violation::where('student_id', $student->nisn)
+            ->where('validation_status', 'approved')
+            ->with(['violationPoint', 'teacher', 'validator'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'vio_page');
+
+        // Hitung total poin pelanggaran
+        $totalViolationPoints = Violation::where('student_id', $student->nisn)
+            ->where('validation_status', 'approved')
+            ->join('violation_points', 'violations.violation_points_id', '=', 'violation_points.id')
+            ->sum('violation_points.points');
+
+        return view('students.detail', compact('student', 'achievements', 'violations', 'totalAchievementPoints', 'totalViolationPoints'));
     }
 }

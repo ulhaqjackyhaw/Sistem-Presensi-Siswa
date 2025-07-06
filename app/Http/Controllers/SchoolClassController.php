@@ -18,19 +18,19 @@ class SchoolClassController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $classes = SchoolClass::with('academicYear', 'homeroomTeacher.teacher')->select('classes.*');
+            $classes = SchoolClass::with('academicYear', 'homeroomTeacher.teacher')->select('classes.*'); //
 
             return DataTables::of($classes)
                 ->addIndexColumn()
                 ->addColumn('academic_year', function ($class) {
                     if ($class->academicYear) {
-                        $semesterText = $class->academicYear->semester == 0 ? 'Ganjil' : 'Genap';
+                        $semesterText = $class->academicYear->semester == 0 ? 'Genap' : 'Ganjil';
                         return $class->academicYear->start_year . ' - ' . $class->academicYear->end_year . ' ' . $semesterText;
                     }
                     return '-';
                 })
                 ->addColumn('status', function ($class) {
-                    return $class->is_active ? 'Aktif' : 'Tidak Aktif';
+                    return $class->is_active ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Tidak Aktif</span>'; // Menambahkan badge untuk status
                 })
                 ->addColumn('homeroom_teacher', function ($class) {
                     if ($class->homeroomTeacher && $class->homeroomTeacher->teacher) {
@@ -38,9 +38,12 @@ class SchoolClassController extends Controller
                     }
                     return '-';
                 })
-
                 ->addColumn('action', function ($class) {
                     $editUrl = route('manage-classes.edit', $class->id);
+                    // URL BARU untuk plotting siswa, mengarah ke route yang akan kita buat nanti
+                    $plotSiswaUrl = route('manage-student-class-assignments.create-for-class', ['class_id' => $class->id]); // Definisikan route ini nanti
+
+                    // Perhatikan penambahan item dropdown baru untuk "Plot Siswa"
                     return <<<HTML
                         <div class="btn-group">
                             <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -50,7 +53,9 @@ class SchoolClassController extends Controller
                                 <a class="dropdown-item" href="{$editUrl}">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>
-                                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteClass({$class->id})">
+                                <a class="dropdown-item text-success" href="{$plotSiswaUrl}">  <i class="fas fa-users-cog me-1"></i>Plot Siswa
+                                </a>
+                                <div class="dropdown-divider"></div> <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteClass({$class->id})">
                                     <i class="fas fa-trash-alt me-1"></i>Delete
                                 </a>
                             </div>
@@ -61,19 +66,15 @@ class SchoolClassController extends Controller
                         </div>
                     HTML;
                 })
-
-
-                ->rawColumns(['status', 'action'])
+                ->rawColumns(['status', 'action']) // Pastikan 'action' dan 'status' (jika pakai HTML badge) ada di rawColumns
                 ->make(true);
         }
 
-        // ✅ Tambahkan baris ini jika kamu ingin data guru langsung dimuat ke view (tanpa AJAX)
-        $teachers = Teacher::all(); // atau User::where('role', 'guru')->get();
-        $classes = SchoolClass::with('homeroomTeacher')->get(); // Pastikan relasi `homeroomTeacher` ada di model
+        $teachers = Teacher::orderBy('name', 'asc')->get(); // Mengurutkan guru berdasarkan nama
+        // $classes = SchoolClass::with('homeroomTeacher')->get(); // Baris ini sepertinya tidak diperlukan jika data kelas utama via AJAX
 
-        return view('manage-classes.index', compact('classes', 'teachers'));
+        return view('manage-classes.index', compact('teachers')); // Hanya kirim $teachers jika $classes via AJAX
     }
-
 
     /**
      * Show the form for creating a new resource.

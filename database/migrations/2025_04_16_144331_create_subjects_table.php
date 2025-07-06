@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-
+            $table->string('subject_code')->unique(); // contoh: MAT01
+            $table->string('subject_name');          // contoh: Matematika
+            $table->string('curriculum_name');// nama kurikulum sebagai string
+             $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true); // jika nanti diaktifkan
             $table->timestamps();
         });
     }

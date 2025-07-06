@@ -29,6 +29,14 @@ class AcademicYear extends Model
         return $this->start_year . '/' . $this->end_year . ' - Semester ' . $this->semester;
     }
 
+    /**
+     * Accessor untuk year (untuk kompatibilitas dengan view yang ada)
+     */
+    public function getYearAttribute()
+    {
+        return $this->start_year . '/' . $this->end_year;
+    }
+
     public function classes()
     {
         return $this->hasMany(SchoolClass::class, 'academic_year_id');
@@ -38,6 +46,7 @@ class AcademicYear extends Model
     {
         return $this->hasMany(HomeroomAssignment::class);
     }
+  
     public function schedules()
     {
         return $this->hasMany(ClassSchedule::class, 'academic_year_id');

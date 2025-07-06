@@ -27,9 +27,9 @@ class AchievementPointController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'jenis_prestasi' => 'required',
-            'kategori_prestasi' => 'required',
-            'poin' => 'required|numeric',
+            'achievement_type' => 'required',
+            'achievement_category' => 'required',
+            'points' => 'required|numeric',
         ]);
 
         AchievementPoint::create($validated);
@@ -44,9 +44,9 @@ class AchievementPointController extends Controller
     public function update(Request $request, AchievementPoint $achievement_management)
     {
         $validated = $request->validate([
-            'jenis_prestasi' => 'required',
-            'kategori_prestasi' => 'required',
-            'poin' => 'required|numeric',
+            'achievement_type' => 'required',
+            'achievement_category' => 'required',
+            'points' => 'required|numeric',
         ]);
 
         $achievement_management->update($validated);

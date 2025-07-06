@@ -1,188 +1,103 @@
 @extends('layouts.app')
 
 @section('content')
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-    body, input, button, select, textarea {
-        font-family: 'Roboto', sans-serif !important;
-    }
-
-    .content-section {
-        background-color: #f4f6f9;
-        padding: 60px 0;
-    }
-
-    .title-prestasi {
-        font-size: 36px;
-        font-weight: 700;
-        color: #003366;
-        margin-bottom: 32px;
-        text-align: left;
-        margin-left: 60px; /* selaraskan dengan tambah */
-    }
-
-    .prestasi-card-wrapper {
-        margin: 0 auto;
-        padding-left: 60px;
-        padding-right: 60px;
-    }
-
-    .prestasi-card {
-        background-color: #fff;
-        border-radius: 16px;
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        padding: 48px;
-        position: relative;
-        width: 100%;
-    }
-
-    .prestasi-card .form-group {
-        margin-bottom: 28px;
-    }
-
-    .prestasi-card .form-group label {
-        font-size: 18px;
-        font-weight: 500;
-        color: #003366;
-        display: block;
-        margin-bottom: 12px;
-    }
-
-    .prestasi-card .form-control {
-        font-size: 18px;
-        padding: 5px 20px;
-        border-radius: 10px;
-        border: 1px solid #ced4da;
-        width: 100%;
-    }
-
-    .prestasi-card .form-control:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-
-    .select-wrapper {
-        position: relative;
-    }
-
-    .select-wrapper select {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url("data:image/svg+xml;utf8,<svg fill='%23003366' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        background-size: 20px;
-        padding-right: 48px;
-        z-index: 1; /* Pastikan dropdown berada di atas */
-        position: relative; /* Pastikan elemen berada di atas */
-        cursor: pointer; /* Tambahkan pointer untuk memastikan klik */
-    }
-
-    .btn-save {
-        background-color: #007bff;
-        color: #fff;
-        font-size: 18px;
-        font-weight: 600;
-        border: none;
-        padding: 16px;
-        border-radius: 10px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: background-color 0.2s ease;
-    }
-
-    .btn-save:hover {
-        background-color: #0056b3;
-    }
-
-    .back-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background-color: #e9f2ff;
-        border: none;
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #007bff;
-        font-size: 20px;
-        transition: background-color 0.2s ease;
-    }
-
-    .back-btn:hover {
-        background-color: #d0e7ff;
-    }
-</style>
-
-<div class="content-section">
-    <div class="container-fluid">
-        <div class="title-prestasi">Edit Data Prestasi</div>
-        <div class="prestasi-card-wrapper">
-            <div class="prestasi-card">
-                <button type="button" onclick="window.history.back()" class="back-btn">
-                    <i class="fa fa-arrow-left"></i>
-                </button>
-                <form method="POST" action="{{ route('achievement-management.update', ['achievement_management' => $achievement->id]) }}">
-                    @csrf
-                    @method('PUT')
-
-                    <!-- Dropdown Jenis Prestasi -->
-                    <div class="form-group select-wrapper">
-                        <label for="jenis_prestasi">Jenis Prestasi</label>
-                        <select id="jenis_prestasi" name="jenis_prestasi" class="form-control" required>
-                            <option value="" disabled {{ old('jenis_prestasi', $achievement->jenis_prestasi) ? '' : 'selected' }}>Pilih jenis prestasi</option>
-                            @php
-                                $jenisOptions = [
-                                    'Juara 1 Internasional',
-                                    'Juara 2 Internasional',
-                                    'Juara 3 Internasional',
-                                    'Juara 1 Nasional',
-                                    'Juara 2 Nasional',
-                                    'Juara 3 Nasional',
-                                    'Juara 1 Kota/Kabupaten',
-                                    'Juara 2 Kota/Kabupaten',
-                                    'Juara 3 Kota/Kabupaten',
-                                ];
-                            @endphp
-                            @foreach ($jenisOptions as $option)
-                                <option value="{{ $option }}" {{ old('jenis_prestasi', $achievement->jenis_prestasi) == $option ? 'selected' : '' }}>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Dropdown Kategori Prestasi -->
-                    <div class="form-group select-wrapper">
-                        <label for="kategori_prestasi">Kategori Prestasi</label>
-                        <select id="kategori_prestasi" name="kategori_prestasi" class="form-control" required>
-                            <option value="" disabled {{ old('kategori_prestasi', $achievement->kategori_prestasi) ? '' : 'selected' }}>Pilih kategori prestasi</option>
-                            <option value="Akademik" {{ old('kategori_prestasi', $achievement->kategori_prestasi) == 'Akademik' ? 'selected' : '' }}>Akademik</option>
-                            <option value="Non Akademik" {{ old('kategori_prestasi', $achievement->kategori_prestasi) == 'Non Akademik' ? 'selected' : '' }}>Non Akademik</option>
-                        </select>
-                    </div>
-
-                    <!-- Input Poin -->
-                    <div class="form-group">
-                        <label for="poin">Poin</label>
-                        <input type="number" id="poin" name="poin" class="form-control" value="{{ old('poin', $achievement->poin) }}" required>
-                    </div>
-
-                    <button type="submit" class="btn-save">
-                        <i class="fa fa-save"></i> SIMPAN PERUBAHAN
-                    </button>
-                </form>
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 text-uppercase">
+                    <h4 class="m-0">Edit Data Prestasi</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h5 class="card-title m-0">Form Data Prestasi</h5>
+                            <div class="card-tools">
+                                <a href="{{ url()->previous() }}" class="btn btn-tool" title="Kembali">
+                                    <i class="fas fa-arrow-alt-circle-left"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('achievement-management.update', ['achievement_management' => $achievement->id]) }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="card-body">
+
+                                {{-- Jenis Prestasi --}}
+                                <div class="form-group">
+                                    <label for="achievement_type">Jenis Prestasi</label>
+                                    <select id="achievement_type" name="achievement_type" class="form-control @error('achievement_type') is-invalid @enderror" required>
+                                        <option value="" disabled {{ old('achievement_type', $achievement->achievement_type) ? '' : 'selected' }}>Pilih jenis prestasi</option>
+                                        @php
+                                            $jenisOptions = [
+                                                'Juara 1 Internasional',
+                                                'Juara 2 Internasional',
+                                                'Juara 3 Internasional',
+                                                'Juara 1 Nasional',
+                                                'Juara 2 Nasional',
+                                                'Juara 3 Nasional',
+                                                'Juara 1 Provinsi',
+                                                'Juara 2 Provinsi',
+                                                'Juara 3 Provinsi',
+                                                'Juara 1 Kota/Kabupaten',
+                                                'Juara 2 Kota/Kabupaten',
+                                                'Juara 3 Kota/Kabupaten',
+                                            ];
+                                        @endphp
+                                        @foreach ($jenisOptions as $option)
+                                            <option value="{{ $option }}" {{ old('achievement_type', $achievement->achievement_type) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('achievement_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Kategori Prestasi --}}
+                                <div class="form-group">
+                                    <label for="achievement_category">Kategori Prestasi</label>
+                                    <select id="achievement_category" name="achievement_category" class="form-control @error('achievement_category') is-invalid @enderror" required>
+                                        <option value="" disabled {{ old('achievement_category', $achievement->achievement_category) ? '' : 'selected' }}>Pilih kategori prestasi</option>
+                                        <option value="Akademik" {{ old('achievement_category', $achievement->achievement_category) == 'Akademik' ? 'selected' : '' }}>Akademik</option>
+                                        <option value="Non Akademik" {{ old('achievement_category', $achievement->achievement_category) == 'Non Akademik' ? 'selected' : '' }}>Non Akademik</option>
+                                    </select>
+                                    @error('achievement_category')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Points --}}
+                                <div class="form-group">
+                                    <label for="points">Points</label>
+                                    <input type="number" id="points" name="points" class="form-control @error('points') is-invalid @enderror" value="{{ old('points', $achievement->points) }}" required>
+                                    @error('points')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                            </div>
+
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-block btn-flat text-white" style="background-color: #1777E5">
+                                    <i class="fa fa-save"></i> SIMPAN PERUBAHAN
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

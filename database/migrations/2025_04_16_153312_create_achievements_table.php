@@ -12,8 +12,7 @@ return new class extends Migration
             $table->id();
             $table->char('student_id', 18);
             $table->string('achievements_name');
-            $table->string('jenis_prestasi');
-            $table->string('kategori_prestasi');
+            $table->unsignedBigInteger('achievement_points_id');
             $table->date('achievement_date');
             $table->foreignId('academic_year_id')->constrained('academic_years')->onDelete('cascade');
             $table->text('description');
@@ -24,6 +23,7 @@ return new class extends Migration
 
             $table->foreign('student_id')->references('nisn')->on('students')->onDelete('cascade');
             $table->foreign('awarded_by')->references('nip')->on('teachers')->onDelete('set null');
+            $table->foreign('achievement_points_id')->references('id')->on('achievement_points')->onDelete('cascade');
         });
     }
 

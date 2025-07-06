@@ -20,14 +20,18 @@ class GuruBkSeeder extends Seeder
     public function run(): void
     {
         // Buat role Guru BK
-        $guruBkRole = Role::create(['name' => 'Guru BK']);
+        $guruBkRole = Role::firstOrCreate(['name' => 'Guru BK']);
 
         // Buat user Guru BK
-        $guruBkUser = User::create([
-            'name' => 'Guru BK 1',
-            'email' => 'gurubk1@gmail.com',
-            'password' => Hash::make('gurubk123'),
-        ]);
+        $guruBkUser = User::firstOrCreate(
+            [
+                'email' => 'gurubk1@gmail.com'
+            ],
+            [
+                'name' => 'Guru BK 1',
+                'password' => Hash::make('gurubk123'),
+            ]
+        );
         $guruBkUser->assignRole('Guru BK');
 
         // Buat menu utama
@@ -65,7 +69,7 @@ class GuruBkSeeder extends Seeder
         ]);
         $laporanPelanggaran = Menu::create([
             'nama_menu' => 'Laporan Pelanggaran',
-            'url' => 'violation-report',
+            'url' => 'violation-validations', // Ubah dari violation-report ke violation-validations
             'icon' => '',
             'parent_id' => $pelanggaranMenu->id,
             'urutan' => 2
@@ -88,7 +92,7 @@ class GuruBkSeeder extends Seeder
         ]);
         $laporanPrestasi = Menu::create([
             'nama_menu' => 'Laporan Prestasi',
-            'url' => 'achievement-report',
+            'url' => 'achievement-validations',
             'icon' => '',
             'parent_id' => $prestasiMenu->id,
             'urutan' => 2
@@ -104,10 +108,15 @@ class GuruBkSeeder extends Seeder
         ];
         foreach ($childMenus as $key => $menuId) {
             foreach (['create', 'read', 'update', 'delete'] as $action) {
-                $perm = Permission::create([
-                    'name' => $action . '_' . $key,
-                    'menu_id' => $menuId
-                ]);
+                $perm = Permission::firstOrCreate(
+                    [
+                        'name' => $action . '_' . $key,
+                        'guard_name' => 'web'
+                    ],
+                    [
+                        'menu_id' => $menuId
+                    ]
+                );
                 $permissions[] = $perm->name;
             }
         }

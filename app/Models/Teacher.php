@@ -16,6 +16,7 @@ class Teacher extends Model
     protected $keyType = 'string';
     protected $fillable = [
         'nip',
+        'dapodik_number',
         'name',
         'phone',
         'address',
@@ -36,9 +37,19 @@ class Teacher extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     public function homeroomAssignments()
-{
-    return $this->hasMany(HomeroomAssignment::class, 'teacher_id', 'nip');
-}
+    {
+        return $this->hasMany(HomeroomAssignment::class, 'teacher_id', 'nip');
+    }
+
+    public function teachingAssignments()
+    {
+        return $this->hasMany(TeachingAssignment::class, 'teacher_id', 'nip');
+    }
+
+    public function setDapodikNumberAttribute($value)
+    {
+        $this->attributes['dapodik_number'] = $value ? substr($value, 0, 16) : null;
+    }
 }

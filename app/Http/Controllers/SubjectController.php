@@ -3,102 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\Curriculum;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class SubjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->ajax()) {
-            $data = Subject::latest()->get();
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('kode', function ($row) {
-                    return $row->code;
-                })
-                ->addColumn('nama', function ($row) {
-                    return $row->name;
-                })
-                ->addColumn('deskripsi', function ($row) {
-                    return $row->description ?? '-';
-                })
-                ->addColumn('action', function ($row) {
-                    $editUrl = route('subjects.edit', $row->id);
-                    $deleteFunc = "deleteSubject($row->id)";
-                    return '
-                        <a href="' . $editUrl . '" class="btn btn-sm btn-warning">Edit</a>
-                        <button onclick="' . $deleteFunc . '" class="btn btn-sm btn-danger">Hapus</button>
-                    ';
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('subjects.index');
+        $subjects = Subject::latest()->get();
+        return view('subjects.index', compact('subjects'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('subjects.create');
+        $curriculums = Curriculum::all();
+        return view('subjects.create', compact('curriculums'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'code' => 'required|string|max:10|unique:subjects,code',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
+        $validated = $request->validate([
+            'subject_code' => 'required|string|max:10|unique:subjects,subject_code',
+            'subject_name' => 'required|string|max:255',
+            'curriculum_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
-        $validatedData['is_active'] = 1;
-
-        Subject::create($validatedData);
-
-        return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil ditambahkan.');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Subject $subject)
-    {
-        return view('subjects.edit', compact('subject'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Subject $subject)
-    {
-        $validatedData = $request->validate([
-            'code' => 'required|string|max:10|unique:subjects,code,' . $subject->id,
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
+        Subject::create([
+            'subject_code' => $validated['subject_code'],
+            'subject_name' => $validated['subject_name'],
+            'curriculum_name' => $validated['curriculum_name'],
+            'description' => $validated['description'] ?? null,
         ]);
 
-        $subject->update($validatedData);
-
-        return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil diperbarui.');
+        return redirect()->route('manage-subjects.index')->with('success', 'Mata pelajaran berhasil ditambahkan.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function edit($id)
+    {
+        $subject = Subject::findOrFail($id);
+        $curriculums = Curriculum::all();
+        return view('subjects.edit', compact('subject', 'curriculums'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $subject = Subject::findOrFail($id);
+
+        $validated = $request->validate([
+            'subject_code' => 'required|string|max:10|unique:subjects,subject_code,' . $subject->id,
+            'subject_name' => 'required|string|max:255',
+            'curriculum_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $subject->update([
+            'subject_code' => $validated['subject_code'],
+            'subject_name' => $validated['subject_name'],
+            'curriculum_name' => $validated['curriculum_name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()->route('manage-subjects.index')->with('success', 'Mata pelajaran berhasil diperbarui.');
+    }
+
     public function destroy($id)
     {
         $subject = Subject::findOrFail($id);
         $subject->delete();
 
-        return redirect()->route('subjects.index')->with('success', 'Mata pelajaran berhasil dihapus.');
+        return redirect()->route('manage-subjects.index')->with('success', 'Mata pelajaran berhasil dihapus.');
     }
 }

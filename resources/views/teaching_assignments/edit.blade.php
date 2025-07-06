@@ -85,15 +85,21 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="subject_id">Mata Pelajaran</label>
-                                <select name="subject_id" id="subject_id" class="form-control" required>
+                                <label>Mata Pelajaran</label>
+                                <select name="subject_id" class="form-control @error('subject_id') is-invalid @enderror" required>
                                     <option value="">-- Pilih Mata Pelajaran --</option>
                                     @foreach($subjects as $subject)
-                                        <option value="{{ $subject->id }}" {{ $subject->id == $teacherAssignment->subject_id ? 'selected' : '' }}>
-                                            {{ $subject->name }}
+                                        <option value="{{ $subject->id }}"
+                                            {{ (old('subject_id', $teacherAssignment->subject_id ?? '') == $subject->id) ? 'selected' : '' }}>
+                                            {{ $subject->subject_name }}
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('subject_id')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
 
                             <div class="form-group">

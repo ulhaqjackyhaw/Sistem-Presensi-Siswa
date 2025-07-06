@@ -9,9 +9,9 @@ class CreateAchievementPointsTable extends Migration
     {
         Schema::create('achievement_points', function (Blueprint $table) {
             $table->id();
-            $table->string('jenis_prestasi');
-            $table->string('kategori_prestasi');
-            $table->integer('poin');
+            $table->string('achievement_type');
+            $table->string('achievement_category');
+            $table->integer('points');
             $table->timestamps();
         });
     }

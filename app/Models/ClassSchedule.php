@@ -19,7 +19,6 @@ class ClassSchedule extends Model
         'hour_id',
     ];
 
-
     /**
      * Relationship with Class Room model
      *
@@ -37,14 +36,13 @@ class ClassSchedule extends Model
 
     public function academicYear()
     {
-        return $this->belongsTo(AcademicYear::class);
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
     }
 
     public function schoolClass()
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
-
 
     public function subject()
     {

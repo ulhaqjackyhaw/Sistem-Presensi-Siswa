@@ -36,7 +36,7 @@
                         <option value="">-- Pilih Tahun Akademik --</option>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}">
-                                {{ str_replace(['Semester 0', 'Semester 1'], ['Semester Ganjil', 'Semester Genap'], $year->year_label) }}
+                                {{ str_replace(['Semester 0', 'Semester 1'], ['Semester Genap', 'Semester Ganjil'], $year->year_label) }}
                             </option>
                         @endforeach
                     </select>
@@ -44,19 +44,19 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
 
                 <div class="mb-3">
                     <label for="is_active" class="form-label">Status</label>
                     <!-- Hidden input to ensure '0' is sent when checkbox is unchecked -->
                     <input type="hidden" name="is_active" value="0">
                     <div class="form-check">
-                        <input 
-                            class="form-check-input" 
-                            type="checkbox" 
-                            id="is_active" 
-                            name="is_active" 
-                            value="1" 
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="is_active"
+                            name="is_active"
+                            value="1"
                             {{ old('is_active', '1') == '1' ? 'checked' : '' }}
                         >
                         <label class="form-check-label" for="is_active">
@@ -67,7 +67,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
 
 
 

@@ -69,4 +69,33 @@ class ViolationPointController extends Controller
         $violationPoint->delete();
         return redirect()->route('violation-management.index')->with('success', 'Data pelanggaran berhasil dihapus.');
     }
+
+    /**
+     * Endpoint untuk autocomplete jenis pelanggaran (violation points)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function autocomplete(Request $request)
+    {
+        $term = $request->input('term');
+        $query = ViolationPoint::query();
+        if ($term) {
+            $query->where(function($q) use ($term) {
+                $q->where('violation_type', 'like', "%{$term}%")
+                  ->orWhere('violation_level', 'like', "%{$term}%");
+            });
+        }
+        $results = $query->orderBy('violation_type')
+            ->limit(10)
+            ->get(['id', 'violation_type', 'violation_level', 'points']);
+
+        $formatted = $results->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'value' => $item->violation_type . ' (' . $item->violation_level . ', Poin: ' . $item->points . ')',
+                'label' => $item->violation_type . ' (' . $item->violation_level . ', Poin: ' . $item->points . ')',
+            ];
+        });
+        return response()->json($formatted);
+    }
 }

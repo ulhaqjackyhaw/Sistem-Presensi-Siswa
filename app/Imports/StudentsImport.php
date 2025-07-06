@@ -80,9 +80,17 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             $tahunMasukKey = $this->findHeaderKey($row, 'tahun_masuk');
 
             $requiredKeys = [
-                $nisKey, $nisnKey, $namaKey, $alamatKey, $teleponKey,
-                $namaOrangTuaKey, $teleponOrangTuaKey, $emailOrangTuaKey,
-                $jenisKelaminKey, $tanggalLahirKey, $tahunMasukKey
+                $nisKey,
+                $nisnKey,
+                $namaKey,
+                $alamatKey,
+                $teleponKey,
+                $namaOrangTuaKey,
+                $teleponOrangTuaKey,
+                $emailOrangTuaKey,
+                $jenisKelaminKey,
+                $tanggalLahirKey,
+                $tahunMasukKey
             ];
 
             if (in_array(null, $requiredKeys)) {
@@ -99,14 +107,18 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
                 throw new \Exception('Format tanggal lahir tidak valid.');
             }
 
+            // Konversi otomatis ke string untuk nis, nisn, dan phone
+            $nisValue = isset($row[$nisKey]) ? (string)$row[$nisKey] : '';
+            $nisnValue = isset($row[$nisnKey]) ? (string)$row[$nisnKey] : '';
+            $phoneValue = isset($row[$teleponKey]) ? (string)$row[$teleponKey] : '';
+            $parentPhoneValue = isset($row[$teleponOrangTuaKey]) ? (string)$row[$teleponOrangTuaKey] : '';
+
             // Validasi NIS
-            $nisValue = (string) $row[$nisKey];
             if (strlen($nisValue) > 20 || !ctype_digit($nisValue)) {
                 throw new \Exception('NIS harus berupa angka dan panjang maksimal 20 karakter.');
             }
 
             // Validasi NISN
-            $nisnValue = (string) $row[$nisnKey];
             if (strlen($nisnValue) !== 10 || !ctype_digit($nisnValue)) {
                 throw new \Exception('NISN harus berupa 10 digit angka.');
             }
@@ -117,36 +129,46 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             }
 
             return DB::transaction(function () use (
-                $row, $nisKey, $nisnKey, $namaKey, $alamatKey, $teleponKey,
-                $namaOrangTuaKey, $teleponOrangTuaKey, $emailOrangTuaKey,
-                $jenisKelaminKey, $birthDate, $tahunMasukKey
+                $row,
+                $nisKey,
+                $nisnKey,
+                $namaKey,
+                $alamatKey,
+                $teleponKey,
+                $namaOrangTuaKey,
+                $teleponOrangTuaKey,
+                $emailOrangTuaKey,
+                $jenisKelaminKey,
+                $birthDate,
+                $tahunMasukKey,
+                $nisnValue,
+                $nisValue,
+                $phoneValue,
+                $parentPhoneValue
             ) {
-                $user = User::firstOrCreate(
-                    ['email' => strtolower($row[$emailOrangTuaKey])],
-                    [
-                        'name' => $row[$namaKey],
-                        'password' => Hash::make($row[$nisnKey]),
-                    ]
-                );
+                $user = User::create([
+                    'name' => $row[$namaKey],
+                    'email' => $row[$emailOrangTuaKey],
+                    'password' => Hash::make($nisnValue . date('dmY', strtotime($birthDate)))
+                ]);
 
                 $user->assignRole('Siswa');
 
                 return Student::create([
-                    'nis' => $row[$nisKey],
-                    'nisn' => $row[$nisnKey],
+                    'nis' => $nisValue,
+                    'nisn' => $nisnValue,
                     'name' => $row[$namaKey],
                     'gender' => $row[$jenisKelaminKey],
                     'birth_date' => $birthDate,
                     'address' => $row[$alamatKey],
-                    'phone' => $row[$teleponKey],
+                    'phone' => $phoneValue,
                     'parent_name' => $row[$namaOrangTuaKey],
-                    'parent_phone' => $row[$teleponOrangTuaKey],
+                    'parent_phone' => $parentPhoneValue,
                     'parent_email' => $row[$emailOrangTuaKey],
                     'enter_year' => $row[$tahunMasukKey],
                     'user_id' => $user->id,
                 ]);
             });
-
         } catch (\Exception $e) {
             Log::error('Error in row:', [
                 'row' => $row,
@@ -181,12 +203,23 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
 
     public function rules(): array
     {
-        return [];
+        return [
+            '*.email_orang_tua' => 'required|email|unique:users,email',
+            '*.nisn' => 'required|digits:10|unique:students,nisn',
+            '*.nis' => 'required|digits_between:1,20|unique:students,nis',
+        ];
     }
 
     public function customValidationMessages()
     {
-        return [];
+        return [
+            'email_orang_tua.required' => 'Kolom Email Orang Tua wajib diisi.',
+            'email_orang_tua.email'    => 'Format Email Orang Tua tidak valid.',
+            'email_orang_tua.unique'   => 'Email Orang Tua :input sudah terdaftar.',
+
+            'nisn.unique' => 'NISN :input sudah terdaftar.',
+            'nis.unique'  => 'NIS :input sudah terdaftar.',
+        ];
     }
 
     public function batchSize(): int

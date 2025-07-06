@@ -17,6 +17,7 @@ class TeacherTemplateExport implements FromArray, WithHeadings, WithStyles, With
         return [
             [
                 'nip' => '123456789012',
+                'dapodik_number' => '1234567890',
                 'nama' => 'Contoh: Budi Santoso, S.Pd.',
                 'email' => 'budi@example.com',
                 'telepon' => '081234567890',
@@ -31,6 +32,7 @@ class TeacherTemplateExport implements FromArray, WithHeadings, WithStyles, With
     {
         return [
             'NIP',
+            'Nomor Dapodik',
             'Nama',
             'Email',
             'Telepon',
@@ -72,15 +74,16 @@ class TeacherTemplateExport implements FromArray, WithHeadings, WithStyles, With
 
         // Set lebar kolom
         $sheet->getColumnDimension('A')->setWidth(15);  // NIP
-        $sheet->getColumnDimension('B')->setWidth(30);  // Nama
-        $sheet->getColumnDimension('C')->setWidth(25);  // Email
-        $sheet->getColumnDimension('D')->setWidth(15);  // Telepon
-        $sheet->getColumnDimension('E')->setWidth(35);  // Alamat
-        $sheet->getColumnDimension('F')->setWidth(20);  // Jenis Kelamin
-        $sheet->getColumnDimension('G')->setWidth(25);  // Tanggal Lahir
+        $sheet->getColumnDimension('B')->setWidth(20);  // Nomor Dapodik
+        $sheet->getColumnDimension('C')->setWidth(30);  // Nama
+        $sheet->getColumnDimension('D')->setWidth(25);  // Email
+        $sheet->getColumnDimension('E')->setWidth(15);  // Telepon
+        $sheet->getColumnDimension('F')->setWidth(35);  // Alamat
+        $sheet->getColumnDimension('G')->setWidth(20);  // Jenis Kelamin
+        $sheet->getColumnDimension('H')->setWidth(25);  // Tanggal Lahir
 
         // Tambahkan validasi untuk jenis kelamin
-        $validation = $sheet->getCell('F2')->getDataValidation();
+        $validation = $sheet->getCell('G2')->getDataValidation();
         $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
         $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
         $validation->setAllowBlank(false);

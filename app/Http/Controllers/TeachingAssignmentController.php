@@ -11,6 +11,14 @@ use Illuminate\Http\Request;
 
 class TeachingAssignmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:create_teacher_subject_assignment', ['only' => ['create', 'store']]);
+        $this->middleware('permission:read_teacher_subject_assignment', ['only' => ['index', 'show']]);
+        $this->middleware('permission:update_teacher_subject_assignment', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:delete_teacher_subject_assignment', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -18,7 +26,7 @@ class TeachingAssignmentController extends Controller
     {
         $teachingAssignments = TeachingAssignment::with([
             'academicYear',
-            'class',
+            'schoolClass',
             'subject',
             'teacher'
         ])->get();
@@ -37,7 +45,10 @@ class TeachingAssignmentController extends Controller
         $teachers      = Teacher::all();
 
         return view('teaching_assignments.create', compact(
-            'academicYears', 'classes', 'subjects', 'teachers'
+            'academicYears',
+            'classes',
+            'subjects',
+            'teachers'
         ));
     }
 
@@ -46,7 +57,7 @@ class TeachingAssignmentController extends Controller
      */
     public function store(Request $request)
     {
-/*         dd($request->all()); */
+        /*         dd($request->all()); */
         $validated = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'class_id'         => 'required|exists:classes,id',
@@ -57,7 +68,7 @@ class TeachingAssignmentController extends Controller
         TeachingAssignment::create($validated);
 
         return redirect()->route('manage-teacher-subject-assignments.index')
-                         ->with('success', 'Penugasan berhasil ditambahkan.');
+            ->with('success', 'Penugasan berhasil ditambahkan.');
     }
 
     /**
@@ -79,7 +90,11 @@ class TeachingAssignmentController extends Controller
         $teachers      = Teacher::all();
 
         return view('teaching_assignments.edit', compact(
-            'teacherAssignment', 'academicYears', 'classes', 'subjects', 'teachers'
+            'teacherAssignment',
+            'academicYears',
+            'classes',
+            'subjects',
+            'teachers'
         ));
     }
 
@@ -98,7 +113,7 @@ class TeachingAssignmentController extends Controller
         $teacherAssignment->update($validated);
 
         return redirect()->route('manage-teacher-subject-assignments.index')
-                         ->with('success', 'Penugasan berhasil diperbarui.');
+            ->with('success', 'Penugasan berhasil diperbarui.');
     }
 
     /**
@@ -109,6 +124,6 @@ class TeachingAssignmentController extends Controller
         $teacherAssignment->delete();
 
         return redirect()->route('manage-teacher-subject-assignments.index')
-                         ->with('success', 'Penugasan berhasil dihapus.');
+            ->with('success', 'Penugasan berhasil dihapus.');
     }
 }

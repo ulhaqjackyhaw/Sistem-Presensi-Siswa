@@ -9,13 +9,16 @@
         </p>
     </header>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
+    <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+        class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+        {{ __('Delete Account') }}
+    </button>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+    <div x-data="{ show: false }" x-show="show"
+        x-on:open-modal.window="if ($event.detail === 'confirm-user-deletion') show = true"
+        x-on:close.window="show = false" class="fixed inset-0 flex items-center justify-center z-50">
+        <form method="post" action="{{ route('profile.destroy') }}"
+            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
             @csrf
             @method('delete')
 
@@ -28,28 +31,32 @@
             </p>
 
             <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+                <label for="password" class="sr-only">
+                    {{ __('Password') }}
+                </label>
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                <input id="password" name="password" type="password"
+                    class="mt-1 block w-3/4 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="{{ __('Password') }}" />
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                @if ($errors->userDeletion->has('password'))
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-2">
+                        {{ $errors->userDeletion->first('password') }}
+                    </p>
+                @endif
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <button type="button" x-on:click="$dispatch('close')"
+                    class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                     {{ __('Cancel') }}
-                </x-secondary-button>
+                </button>
 
-                <x-danger-button class="ml-3">
+                <button type="submit"
+                    class="ml-3 inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                     {{ __('Delete Account') }}
-                </x-danger-button>
+                </button>
             </div>
         </form>
-    </x-modal>
+    </div>
 </section>

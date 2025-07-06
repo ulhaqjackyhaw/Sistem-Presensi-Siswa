@@ -16,8 +16,17 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="nip">NIP</label>
-                                <input type="text" class="form-control @error('nip') is-invalid @enderror" id="nip" name="nip" value="{{ $teacher->nip }}" readonly>
+                                <input type="text" maxlength="18" class="form-control @error('nip') is-invalid @enderror" id="nip" name="nip" value="{{ $teacher->nip }}">
                                 @error('nip')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label for="dapodik_number">Nomor Dapodik</label>
+                                <input type="text" maxlength="16" class="form-control @error('dapodik_number') is-invalid @enderror" id="dapodik_number" name="dapodik_number" value="{{ old('dapodik_number', $teacher->dapodik_number) }}">
+                                @error('dapodik_number')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -34,7 +43,12 @@
                             </div>
                             <div class="form-group">
                                 <label for="email">Email</label>
-                                <input type="email" class="form-control" id="email" value="{{ $teacher->user->email }}" readonly>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ $teacher->user->email }}">
+                                @error('email')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label for="phone">No. Telepon</label>
@@ -68,7 +82,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="birth_date">Tanggal Lahir</label>
-                                <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date', $teacher->birth_date) }}">
+                                <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date', $teacher->birth_date ? $teacher->birth_date->format('Y-m-d') : '') }}">
                                 @error('birth_date')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -79,10 +93,10 @@
                                 <label for="photo">Foto</label>
                                 <div class="custom-file">
                                     <input type="file" class="custom-file-input @error('photo') is-invalid @enderror" id="photo" name="photo">
-                                    <label class="custom-file-label" for="photo">Pilih file</label>
+                                    <label class="custom-file-label" for="photo">Pilih file (maks 2 MB)</label>
                                 </div>
                                 @error('photo')
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback" role="alert">
                                     {{ $message }}
                                 </div>
                                 @enderror
@@ -104,12 +118,26 @@
     </div>
 @endsection
 
-@push('scripts')
-<script>
-    // Menampilkan nama file yang dipilih
-    $('.custom-file-input').on('change', function() {
-        let fileName = $(this).val().split('\\').pop();
-        $(this).next('.custom-file-label').addClass("selected").html(fileName);
-    });
-</script>
+@push('js')
+    <script src="{{ asset('plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
+    <script>
+        $(function() {
+            bsCustomFileInput.init();
+        });
+        const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // Maximum file size in bytes (2MB)
+        $('#photo').on('change', function() {
+            const file = this.files[0];
+            if (file && file.size > MAX_PHOTO_SIZE) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File terlalu besar',
+                    text: 'Ukuran file maksimal 2MB!',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+                $(this).val('');
+                $(this).next('.custom-file-label').html('Pilih file (maks 2Mb)');
+            }
+        });
+    </script>
 @endpush

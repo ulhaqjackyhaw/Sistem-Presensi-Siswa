@@ -18,18 +18,23 @@ class Achievement extends Model
         'description',
         'awarded_by',
         'evidence',
-        'status'
+        'status',
+        'validation_status',
+        'validator_id',
+        'validation_notes',
+        'validated_at'
     ];
 
     protected $casts = [
         'achievement_date' => 'date',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'validated_at' => 'datetime'
     ];
 
     public function student()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(Student::class, 'student_id', 'nisn');
     }
 
     public function achievementPoint()
@@ -45,5 +50,10 @@ class Achievement extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class, 'awarded_by');
+    }
+
+    public function validator()
+    {
+        return $this->belongsTo(Teacher::class, 'validator_id');
     }
 }
