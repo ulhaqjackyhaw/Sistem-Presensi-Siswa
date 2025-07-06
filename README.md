@@ -1,65 +1,82 @@
 
-<p align="center">
-<a href="https://laravel.com"  target="_blank"><img  src="https://ik.polines.ac.id/wp-content/uploads/2023/11/logo-web.png"  width="360"  alt="Laravel Logo"></a> 
-<a  href="https://laravel.com"  target="_blank"><img  src="https://ik.polines.ac.id/wp-content/uploads/2024/02/laravel-logo.jpg"  width="220"  alt="Laravel Logo"></a>
-</p>  
 
-# PBL Template D3 Teknik Informatika & S.Tr. Teknologi Rekayasa Komputer
+# Presensi-PBL
 
-Repository ini digunakan sebagai template aplikasi dasar yang akan digunakan untuk pelaksanaan <i><b>Project-Based Learning</b></i> pada kedua prodi di atas di Jurusan Teknik Elektro, Politeknik Negeri Semarang.
+Sistem Presensi Project-Based Learning (PBL) berbasis web untuk D3 Teknik Informatika & S.Tr. Teknologi Rekayasa Komputer, Jurusan Teknik Elektro, Politeknik Negeri Semarang.
 
-<i>Minimum requirements</i> untuk menjalankan template ini adalah:
-- PHP 8.2
-- Laravel 11
-- MySQL 8.0/MariaDB 10.4
+## Tech Stack
 
-Cara menggunakan template ini adalah sebagai berikut:
-1. Dengan menggunakan ``terminal`` atau ``command prompt``, duplikasi template ini menggunakan perintah:
-```
-git clone https://gitlab.com/sukotyasp/pbl-laravel-template.git {project-directory}
-```
-2. Masuk ke ``{project-directory}``, hapus folder **hidden** bernama `` .git``.
-3. Alternatif selain melakukan langkah 1. dan 2., anda dapat mengunduh versi terbaru yang dipublikasikan pada link <a href='https://gitlab.com/sukotyasp/pbl-laravel-template/-/releases'>berikut</a>. Kemudian ``extract`` file yang anda unduh. Buka ``terminal`` atau ``command prompt``, lalu pilih folder hasil ekstrak sebagai folder aktif pada command line.
-4. Install dependency menggunakan composer dengan perintah
+- **Laravel 11** (PHP 8.2) — Backend utama
+- **MySQL/MariaDB** — Database
+- **Vite** — Asset bundler
+- **Python 3** — Integrasi Machine Learning
+- **YOLO** — Image classifier (presensi berbasis foto)
+- **Docker** — Containerization
 
-```
-composer install
-```
-5. __Copy__ file ``.env.example`` menjadi ``.env``
-6. Buat database sesuai yang anda butuhkan, kemudian sesuaikan entry berikut pada file ``.env``:
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE={your database}
-DB_USERNAME={your database username}
-DB_PASSWORD={your database password}
-```
-7. Jalankan perintah berikut:
-```
-php artisan key:generate
-php artisan migrate
-php artisan db:seed
-```
-8. Jalankan aplikasi menggunakan perintah:
-```
-php artisan serve
-```
-9. Anda dapat memodifikasi port yang digunakan:
-```
-php artisan serve --port={custom port}
-```
-10. Selesai, anda dapat login menggunakan:
+## Fitur Utama
+
+- Presensi otomatis berbasis foto (YOLO)
+- Manajemen user, role, dan hak akses (RBAC)
+- Import/export data siswa/guru (Excel)
+- Dashboard statistik presensi
+- API untuk integrasi eksternal
+
+## Instalasi & Setup
+
+1. **Clone repository**
+   ```
+   git clone <repo-ini> presensi-pbl
+   cd presensi-pbl
+   ```
+2. **Install dependency Laravel**
+   ```
+   composer install
+   ```
+3. **Copy file environment**
+   ```
+   cp .env.example .env
+   ```
+4. **Install dependency frontend**
+   ```
+   npm install
+   ```
+5. **Buat database & konfigurasi .env**
+   - Edit file `.env` sesuai database lokal Anda
+6. **Generate key & migrate database**
+   ```
+   php artisan key:generate
+   php artisan migrate --seed
+   ```
+7. **Jalankan server Laravel**
+   ```
+   php artisan serve
+   ```
+8. **Jalankan image-classifier (YOLO) [opsional]**
+   ```
+   cd image-classifier
+   pip install -r requirements.txt
+   python app.py
+   ```
+   Atau gunakan Docker:
+   ```
+   docker compose up --build
+   ```
+
+## Login Default
+
 ```
 username: superadmin@gmail.com
 password: adminadmin
 ```
-<hr>
 
-Terima Kasih kepada:
-- Kaprodi D3 Teknik Informatika
-- Kaprodi S.Tr. Teknologi Rekayasa Komputer
-- Ketua Jurusan Teknik Elektro, Politeknik Negeri Semarang
-- Task Force PBL D3 Teknik Informatika & S.Tr. Teknologi Rekayasa Komputer
-<hr>
+## Struktur Utama
+
+- `app/` — Source code Laravel
+- `image-classifier/` — Service Python YOLO
+- `public/` — Public assets
+- `routes/` — Routing Laravel
+- `resources/` — Blade, JS, CSS
+
+## Lisensi
+
 Modifikasi dari Project: https://github.com/mjumain/RBAC-LARAVEL-9
